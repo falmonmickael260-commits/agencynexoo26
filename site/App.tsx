@@ -6,11 +6,20 @@ import './styles/services.css';
 
 import { Hero } from './components/Hero';
 import { Services } from './components/Services';
+import { Diagnostics } from './components/Diagnostics';
 import { LoaderStage } from './components/LoaderStage';
 import { usePrefersReducedMotion } from './lib/hooks';
 import { fontsReady } from '../shared/wordmark';
 
-type Phase = 'boot' | 'loader' | 'hero';
+/** `?diag=1` shows what the visitor's own browser did. See Diagnostics. */
+const DIAG =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).has('diag');
+
+type Phase = 'boot' | 'loader' | 'fade' | 'hero';
+
+/** Duration of the reduced-motion intro: an opacity change, nothing else. */
+const FADE_INTRO_MS = 700;
 
 export const App: React.FC = () => {
   const reduced = usePrefersReducedMotion();
@@ -48,14 +57,22 @@ export const App: React.FC = () => {
       window.setTimeout(() => pre.remove(), 320);
     }
 
-    // Reduced motion skips the intro entirely and lands on the hero —
-    // the loader is expressive, not informational.
+    /* Reduced motion gets an intro too — just not a moving one.
+       
+       This used to drop straight to the hero with no intro at all, which
+       meant anyone with "Reduce motion" enabled never saw the loader on
+       any device. The setting asks for less MOTION, not for the brand
+       moment to be deleted: an opacity change is not a vestibular
+       trigger, so the veil is faded off the already-composed hero. No
+       travel, no scale, no blur, no parallax. */
     if (reduced) {
-      setPhase('hero');
       setEntered(true);
-    } else {
-      setPhase('loader');
+      setPhase('fade');
+      const done = window.setTimeout(() => setPhase('hero'), FADE_INTRO_MS);
+      return () => window.clearTimeout(done);
     }
+
+    setPhase('loader');
   }, [reduced]);
 
   /* The masthead is fitted from measured font metrics. Starting before
@@ -94,6 +111,11 @@ export const App: React.FC = () => {
             zIndex: 50,
             background: 'var(--ink)',
             pointerEvents: 'none',
+            opacity: phase === 'fade' ? 0 : 1,
+            // Page chrome, not a composition: this fades the veil in the
+            // DOM, outside Remotion's frame clock.
+            // eslint-disable-next-line @remotion/non-pure-animation
+            transition: phase === 'fade' ? `opacity ${FADE_INTRO_MS - 100}ms linear` : undefined,
           }}
         />
       )}
@@ -106,6 +128,8 @@ export const App: React.FC = () => {
       {phase === 'loader' && (
         <LoaderStage onHandoff={onHandoff} onDone={onDone} heroRef={heroRef} />
       )}
+
+      {DIAG && <Diagnostics phase={phase} reduced={reduced} />}
     </>
   );
 };
