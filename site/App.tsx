@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import '../shared/tokens.css';
 import '../shared/hero.css';
 import './styles/site.css';
@@ -10,14 +10,11 @@ import { LoaderStage } from './components/LoaderStage';
 import { usePrefersReducedMotion } from './lib/hooks';
 import { fontsReady } from '../shared/wordmark';
 
-type Phase = 'fonts' | 'loader' | 'hero';
-
-/** A font CDN must never hold the page hostage. */
-const FONT_BUDGET_MS = 1600;
+type Phase = 'boot' | 'loader' | 'hero';
 
 export const App: React.FC = () => {
   const reduced = usePrefersReducedMotion();
-  const [phase, setPhase] = useState<Phase>('fonts');
+  const [phase, setPhase] = useState<Phase>('boot');
   const [entered, setEntered] = useState(false);
   /* Bumped when the real typefaces land. The masthead is fitted from
      measured metrics, so a font arriving after the budget has already
@@ -28,31 +25,43 @@ export const App: React.FC = () => {
   const [, setFontEpoch] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
+  /* Start the intro immediately.
+     
+     This used to wait for the typefaces before mounting the loader, and
+     held an opaque veil in the meantime. The result was up to a second
+     of blank black BEFORE a loader whose own first half-second is a
+     small dot on black — so the intro read as "nothing happened, then
+     the site appeared". Nothing in the first beats needs a font: the dot
+     is a CSS circle, and the wordmark is still invisible at that point.
+
+     A layout effect, not an effect: it runs after the hero's ref is
+     attached and its box is laid out, which is what LoaderStage measures
+     to size the composition — and before the browser paints, so the
+     'boot' phase is never actually seen. */
+  useLayoutEffect(() => {
+    // Reduced motion skips the intro entirely and lands on the hero —
+    // the loader is expressive, not informational.
+    if (reduced) {
+      setPhase('hero');
+      setEntered(true);
+    } else {
+      setPhase('loader');
+    }
+  }, [reduced]);
+
+  /* The masthead is fitted from measured font metrics. Starting before
+     the faces resolve means the first frames are measured against
+     fallbacks, so re-render once they land to re-fit. It happens while
+     the wordmark is still invisible, so the correction is not seen. */
   useEffect(() => {
     let alive = true;
-    const go = () => {
-      if (!alive) return;
-      alive = false;
-      // Reduced motion skips the intro entirely and lands on the hero —
-      // the loader is expressive, not informational.
-      if (reduced) {
-        setPhase('hero');
-        setEntered(true);
-      } else {
-        setPhase('loader');
-      }
-    };
-
     fontsReady().then(() => {
-      setFontEpoch((n) => n + 1);
-      go();
+      if (alive) setFontEpoch((n) => n + 1);
     });
-
-    const budget = window.setTimeout(go, FONT_BUDGET_MS);
     return () => {
-      window.clearTimeout(budget);
+      alive = false;
     };
-  }, [reduced]);
+  }, []);
 
   const onHandoff = useCallback(() => setEntered(true), []);
   const onDone = useCallback(() => setPhase('hero'), []);

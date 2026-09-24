@@ -22,34 +22,35 @@ export const LOADER_FRAMES = 156;
 export const HANDOFF_FRAME = 138;
 
 export const BEATS = {
-  /** The point arrives: scale from 0 with a little overshoot, blur off. */
-  dotIn: [0, 26] as const,
+  /** The point arrives — fast and confident. It is the first thing on
+   *  screen, so it cannot afford half a second of being a faint speck. */
+  dotIn: [0, 16] as const,
   /** It compresses, then releases — the impulse that fires the axis. */
-  dotCharge: [24, 34] as const,
+  dotCharge: [16, 26] as const,
   /** Its resting pulse, which the hero then carries on. */
   dotSettle: [96, 138] as const,
 
   /** Hairline axis shoots out of the dot to both gutters, then recedes. */
-  axis: [28, 62] as const,
-  axisOut: [78, 104] as const,
+  axis: [20, 52] as const,
+  axisOut: [70, 96] as const,
 
   /** The mark unfolds outward. Per-glyph offset = |distance from dot|. */
-  unfold: [30, 88] as const,
+  unfold: [26, 82] as const,
   unfoldStagger: 2.6,
   /** How far, in em, the furthest glyph starts from its final place. */
   unfoldReach: 0.46,
 
   /** Hairlines settle into the positions they hold in the hero. */
-  ruleTop: [64, 100] as const,
-  ruleMid: [74, 110] as const,
+  ruleTop: [58, 94] as const,
+  ruleMid: [66, 102] as const,
 
   /** Corner rails + eyebrow arrive last, quietly. */
-  meta: [82, 108] as const,
-  eyebrow: [90, 116] as const,
+  meta: [76, 102] as const,
+  eyebrow: [84, 110] as const,
 
   /** The only element that says "loading". It lives where the CTA lands. */
-  counter: [26, 118] as const,
-  counterOut: [120, 134] as const,
+  counter: [16, 110] as const,
+  counterOut: [112, 128] as const,
 } as const;
 
 /** wdth axis (Archivo ships 62…125). Condensed → normal. */
@@ -59,8 +60,13 @@ export const STRETCH_TO = 100;
 /** Tracking travels with the width axis so the opening reads as one move. */
 export const TRACK_DELTA = -0.055;
 
-/** Peak blur on an entering glyph, in px at the reference size. */
-export const GLYPH_BLUR = 9;
+/**
+ * Peak blur on an entering glyph, in px. Was 9, which kept the wordmark
+ * illegible well past the point where it should have been readable — on
+ * a dark ground a blurred, half-transparent glyph is indistinguishable
+ * from nothing, and the whole intro read as a black screen.
+ */
+export const GLYPH_BLUR = 5;
 
 /**
  * Period of the dot's resting pulse, in frames. Deliberately equal to

@@ -15,6 +15,10 @@ type Props = {
 
 const FADE_MS = 160;
 
+/* Hoisted: a fresh object literal on every render is a new inputProps
+   identity for the Player, which can reset playback mid-intro. */
+const LOADER_PROPS = { waitForFonts: false } as const;
+
 /**
  * Mounts the Remotion composition over the already-laid-out hero.
  *
@@ -116,9 +120,9 @@ export const LoaderStage: React.FC<Props> = ({ onHandoff, onDone, heroRef }) => 
         fps={LOADER_FPS}
         compositionWidth={size.width}
         compositionHeight={size.height}
-        // The site has already awaited the typefaces; a second gate here
-        // only holds the intro at opacity 0 behind a black screen.
-        inputProps={{ waitForFonts: false }}
+        // The site drives the typefaces; a second gate inside the
+        // composition only held the intro at opacity 0 behind black.
+        inputProps={LOADER_PROPS}
         style={{ width: size.width, height: size.height }}
         controls={false}
         clickToPlay={false}
