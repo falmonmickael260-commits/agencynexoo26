@@ -36,10 +36,25 @@ const DRAW = Easing.bezier(0.65, 0, 0.32, 1);
 
 const clamp = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 
+export type NexooLoaderProps = {
+  /**
+   * Whether the composition must wait for the typefaces itself.
+   *
+   * True in Studio and in headless renders, where nothing else
+   * guarantees them. FALSE in the Player: the site already awaits
+   * fontsReady() before it mounts the loader at all, so gating again
+   * here only ever delays the intro — it held the composition at
+   * opacity 0 for the better part of a second, and the visitor saw a
+   * black screen where the intro should have been.
+   */
+  waitForFonts?: boolean;
+};
+
 /** Holds the first frame until every face — and its wdth axis — is live. */
-const useFonts = (): boolean => {
-  const [ready, setReady] = useState(false);
+const useFonts = (enabled: boolean): boolean => {
+  const [ready, setReady] = useState(!enabled);
   useEffect(() => {
+    if (!enabled) return;
     const handle = delayRender('Loading NEXOO typefaces');
     let alive = true;
     fontsReady()
@@ -51,14 +66,14 @@ const useFonts = (): boolean => {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [enabled]);
   return ready;
 };
 
-export const NexooLoader: React.FC = () => {
+export const NexooLoader: React.FC<NexooLoaderProps> = ({ waitForFonts = true }) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
-  const ready = useFonts();
+  const ready = useFonts(waitForFonts);
 
   /* ---- The dot ------------------------------------------------ */
 

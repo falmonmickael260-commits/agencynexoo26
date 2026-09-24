@@ -116,6 +116,9 @@ export const LoaderStage: React.FC<Props> = ({ onHandoff, onDone, heroRef }) => 
         fps={LOADER_FPS}
         compositionWidth={size.width}
         compositionHeight={size.height}
+        // The site has already awaited the typefaces; a second gate here
+        // only holds the intro at opacity 0 behind a black screen.
+        inputProps={{ waitForFonts: false }}
         style={{ width: size.width, height: size.height }}
         controls={false}
         clickToPlay={false}

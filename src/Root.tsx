@@ -18,6 +18,7 @@ export const RemotionRoot: React.FC = () => {
         fps={LOADER_FPS}
         width={1920}
         height={1080}
+        defaultProps={{ waitForFonts: true }}
       />
       <Composition
         id="NexooLoader-Mobile"
@@ -26,6 +27,7 @@ export const RemotionRoot: React.FC = () => {
         fps={LOADER_FPS}
         width={390}
         height={844}
+        defaultProps={{ waitForFonts: true }}
       />
     </Folder>
   );
