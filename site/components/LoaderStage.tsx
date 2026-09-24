@@ -69,6 +69,8 @@ export const LoaderStage: React.FC<Props> = ({ onHandoff, onDone, heroRef }) => 
       }
     }
 
+    /* `autoPlay` on the Player is the reliable starter; this call is a
+       second attempt for the case where the ref was ready first. */
     player.play();
 
     const finish = () => {
@@ -79,21 +81,47 @@ export const LoaderStage: React.FC<Props> = ({ onHandoff, onDone, heroRef }) => 
       window.setTimeout(onDone, FADE_MS);
     };
 
+    let started = false;
     const onFrame = (e: { detail: { frame: number } }) => {
+      if (e.detail.frame > 0) started = true;
       if (e.detail.frame >= HANDOFF_FRAME) finish();
     };
 
     player.addEventListener('frameupdate', onFrame);
     player.addEventListener('ended', finish);
 
-    // Belt and braces: if the Player never reports a frame (autoplay
-    // blocked, tab throttled), the visitor still reaches the hero.
-    const bail = window.setTimeout(finish, (LOADER_FRAMES / LOADER_FPS) * 1000 + 1200);
+    /* Watchdog.
+
+       Calling play() once from an effect is not enough: on a slow device
+       the Player is not ready yet when the effect runs, the call is a
+       no-op, and the composition sits on frame 0 — which is black. The
+       visitor then waits out the bail timeout and the site appears with
+       no intro at all. That is exactly what was reported, and it never
+       reproduced on a fast machine. Retry until frames actually move. */
+    const retries = [250, 700, 1400].map((delay) =>
+      window.setTimeout(() => {
+        if (!started) player.play();
+      }, delay),
+    );
+
+    /* Two different give-ups: if the intro never started, cut to the
+       hero quickly rather than holding a black screen for its full
+       length; if it did start, allow the whole thing plus some slack. */
+    const bail = window.setTimeout(() => {
+      if (!started) finish();
+    }, 2600);
+
+    const safety = window.setTimeout(
+      finish,
+      (LOADER_FRAMES / LOADER_FPS) * 1000 + 2500,
+    );
 
     return () => {
       player.removeEventListener('frameupdate', onFrame);
       player.removeEventListener('ended', finish);
+      retries.forEach(window.clearTimeout);
       window.clearTimeout(bail);
+      window.clearTimeout(safety);
     };
   }, [onHandoff, onDone]);
 
@@ -124,6 +152,9 @@ export const LoaderStage: React.FC<Props> = ({ onHandoff, onDone, heroRef }) => 
         // composition only held the intro at opacity 0 behind black.
         inputProps={LOADER_PROPS}
         style={{ width: size.width, height: size.height }}
+        // The dependable way to start: doing it by hand from an effect
+        // silently fails whenever the Player is not ready yet.
+        autoPlay
         controls={false}
         clickToPlay={false}
         doubleClickToFullscreen={false}

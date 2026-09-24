@@ -122,7 +122,12 @@ export const App: React.FC = () => {
 
       <main>
         <Hero entered={entered} reduced={reduced} stageRef={heroRef} />
-        <Services reduced={reduced} />
+
+        {/* Held back until the intro has handed over. The five spreads
+            are large inline SVGs, and rendering them during boot pushed
+            first mount out to nearly five seconds on a real device —
+            all of it behind the loader, where none of it can be seen. */}
+        {entered && <Services reduced={reduced} />}
       </main>
 
       {phase === 'loader' && (
