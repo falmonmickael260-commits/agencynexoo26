@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * Self-serve diagnostics, behind `?diag=1`.
@@ -16,10 +16,13 @@ type Row = { label: string; value: string; bad?: boolean };
 
 export const Diagnostics: React.FC<Props> = ({ phase, reduced }) => {
   const [rows, setRows] = useState<Row[]>([]);
+  /* In a ref, not a local: the effect re-runs on every phase change, and
+     a local object was wiped each time — by the moment anyone read the
+     panel, every timing showed "—". */
+  const marks = useRef<Record<string, number>>({});
 
   useEffect(() => {
     let alive = true;
-    const marks: Record<string, number> = {};
     const t = () => Math.round(performance.now());
 
     const tick = () => {
@@ -27,13 +30,14 @@ export const Diagnostics: React.FC<Props> = ({ phase, reduced }) => {
       const overlay = [...document.querySelectorAll('div')].find(
         (d) => d.style.zIndex === '100',
       );
-      if (overlay && !marks.loaderMount) marks.loaderMount = t();
-      if (!overlay && marks.loaderMount && !marks.loaderGone) marks.loaderGone = t();
+      const m = marks.current;
+      if (overlay && !m.loaderMount) m.loaderMount = t();
+      if (!overlay && m.loaderMount && !m.loaderGone) m.loaderGone = t();
 
       const stage = overlay?.querySelector('.stage');
       const slot = stage?.querySelector<HTMLElement>('.wordmark__dot');
-      if (slot && !marks.dotVisible) {
-        if ((parseFloat(getComputedStyle(slot).scale) || 0) > 0.5) marks.dotVisible = t();
+      if (slot && !m.dotVisible) {
+        if ((parseFloat(getComputedStyle(slot).scale) || 0) > 0.5) m.dotVisible = t();
       }
 
       const paint = performance.getEntriesByType('paint');
@@ -42,9 +46,9 @@ export const Diagnostics: React.FC<Props> = ({ phase, reduced }) => {
       setRows([
         { label: 'Réduire les animations', value: reduced ? 'ACTIVÉ' : 'désactivé', bad: reduced },
         { label: 'Phase', value: phase },
-        { label: 'Loader monté', value: marks.loaderMount ? `${marks.loaderMount} ms` : '—', bad: !marks.loaderMount && !reduced },
-        { label: 'Point visible', value: marks.dotVisible ? `${marks.dotVisible} ms` : '—' },
-        { label: 'Loader terminé', value: marks.loaderGone ? `${marks.loaderGone} ms` : '—' },
+        { label: 'Loader monté', value: m.loaderMount ? `${m.loaderMount} ms` : '—', bad: !m.loaderMount && !reduced },
+        { label: 'Point visible', value: m.dotVisible ? `${m.dotVisible} ms` : '—' },
+        { label: 'Loader terminé', value: m.loaderGone ? `${m.loaderGone} ms` : '—' },
         { label: 'Première peinture', value: fcp ? `${Math.round(fcp.startTime)} ms` : '—' },
         { label: 'Polices', value: document.fonts.status },
         { label: 'Archivo', value: document.fonts.check('760 100px Archivo') ? 'ok' : 'ABSENT', bad: !document.fonts.check('760 100px Archivo') },
@@ -53,8 +57,7 @@ export const Diagnostics: React.FC<Props> = ({ phase, reduced }) => {
     };
 
     tick();
-    const id = window.setInterval(tick, 250);
-    window.setTimeout(() => window.clearInterval(id), 9000);
+    const id = window.setInterval(tick, 200);
     return () => {
       alive = false;
       window.clearInterval(id);
