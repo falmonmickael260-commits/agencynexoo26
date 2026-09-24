@@ -10,20 +10,36 @@
     />
     <meta name="theme-color" content="#0A0A0B" />
 
-    <!-- Fonts start fetching before the bundle is even parsed.
-         Archivo is requested WITH its wdth axis (62–125): the loader's
-         whole gesture is that axis opening. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Fonts, loaded WITHOUT blocking the first paint.
+
+         Requested as a normal stylesheet, this blocked rendering on a
+         third-party response: the DOM went interactive at ~360ms but the
+         browser painted nothing until ~1200ms, waiting on Google. The
+         intro therefore began behind a black screen and was mostly over
+         before anything was visible.
+
+         Preloading and swapping rel on load lets the page paint from its
+         own inline CSS while the faces arrive. Safe here because the
+         masthead is gated on document.fonts in JS, so it is never
+         composed against fallback metrics.
+
+         Archivo is requested WITH its wdth axis (62-125): the loader's
+         whole gesture is that axis opening. -->
     <link
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      />
+    </noscript>
 
     <!-- Critical paint: the first frame the browser can show is already
          the loader's ground colour, so there is no white flash and no
