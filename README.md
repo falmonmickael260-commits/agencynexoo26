@@ -24,6 +24,18 @@ nom du dépôt : le build lit `SITE_BASE`, que le workflow dérive de
 casse donc pas silencieusement les chemins. En local, `SITE_BASE` n'est pas
 défini et le site est servi depuis la racine.
 
+### Vercel
+
+Une intégration Vercel est également branchée sur le dépôt et déploie à chaque
+push. `vercel.json` lui donne la commande de build et le dossier de sortie :
+sans ça, Vercel applique ses défauts Vite (`npm run build` vers `dist/`), or ce
+projet n'a pas de script `build` — `build` est pris par Remotion — et sort dans
+`dist-site/`. Le déploiement échouait pour ces deux raisons.
+
+Vercel sert depuis la racine du domaine, donc `SITE_BASE` n'y est pas défini et
+les chemins restent relatifs à `/`. C'est voulu : les deux hébergements ont des
+préfixes différents et chacun lit le sien.
+
 ## Architecture
 
 Le point central : **le loader est une composition Remotion, et sa dernière image
