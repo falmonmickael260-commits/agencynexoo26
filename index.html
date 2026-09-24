@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Nexoo Agency — Le digital, mis en mouvement</title>
+    <meta
+      name="description"
+      content="Nexoo Agency — studio créatif digital. Direction artistique, motion design et expériences web sur mesure."
+    />
+    <meta name="theme-color" content="#0A0A0B" />
+
+    <!-- Fonts start fetching before the bundle is even parsed.
+         Archivo is requested WITH its wdth axis (62–125): the loader's
+         whole gesture is that axis opening. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <!-- Critical paint: the first frame the browser can show is already
+         the loader's ground colour, so there is no white flash and no
+         visible boundary when React and the Player take over. -->
+    <style>
+      html, body { margin: 0; background: #0a0a0b; }
+      #root { min-height: 100svh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="padding: 32px; color: #f2f0ec; font-family: system-ui, sans-serif">
+        <h1 style="font-size: 40px; margin: 0 0 8px">Nexoo Agency</h1>
+        <p>Le digital, mis en mouvement. Activez JavaScript pour découvrir le studio.</p>
+      </div>
+    </noscript>
+    <script type="module" src="/site/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,348 @@
+/* ============================================================
+   SERVICES — five editorial spreads.
+   Each service is a composition, not a row: an oversized outlined
+   numeral behind, the piece overlapping it, the text ranged against
+   it, and the direction alternating down the page.
+   ============================================================ */
+
+.services {
+  position: relative;
+  padding: clamp(72px, 12vh, 150px) var(--pad) clamp(80px, 14vh, 170px);
+  background: var(--ink-lift);
+  border-top: var(--hair) solid var(--faint);
+  background-image: var(--grain-src);
+  background-size: 180px 180px;
+  background-blend-mode: soft-light;
+  overflow: hidden;
+}
+
+/* ---- Head ------------------------------------------------- */
+
+.services__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  padding-bottom: clamp(26px, 4vh, 48px);
+  border-bottom: var(--hair) solid var(--faint);
+}
+
+.services__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(22px, 2.4vw, 34px);
+  letter-spacing: -0.02em;
+  color: var(--paper);
+}
+
+/* The hero's dot, echoed smaller — the section belongs to the mark. */
+.services__dot {
+  display: inline-block;
+  width: 0.32em;
+  height: 0.32em;
+  margin-left: 0.34em;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: 0.06em;
+  animation: dot-breathe 5.2s var(--ease-inout) infinite;
+}
+
+@keyframes dot-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.16); }
+}
+
+/* ---- A spread --------------------------------------------- */
+
+/* A 12-column field the two planes deliberately OVERLAP in. Side-by-side
+   columns made each spread read as a figure with a caption; overlapping
+   them by two columns is what makes it a composition. */
+.svc {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: center;
+  column-gap: clamp(12px, 1.6vw, 28px);
+  padding-block: clamp(48px, 9vh, 120px);
+  border-bottom: var(--hair) solid var(--faint);
+}
+
+/* The two planes sit apart; it is the NUMERAL that overlaps them both.
+   Overlapping the text onto the artwork was the obvious move and the
+   wrong one: the printed pieces are cream, the type is paper white, and
+   the two cancel out. The numeral is outline-only and sits behind
+   everything, so it layers the composition without costing legibility. */
+.svc__art  { grid-area: 1 / 1 / 2 / 7; }
+.svc__body { grid-area: 1 / 8 / 2 / 13; }
+
+/* Alternating direction. Placed explicitly rather than reversed with
+   direction:rtl, which would also flip the text. */
+.svc[data-flip='true'] .svc__art  { grid-area: 1 / 7 / 2 / 13; }
+.svc[data-flip='true'] .svc__body { grid-area: 1 / 1 / 2 / 6; }
+.svc[data-flip='true'] .svc__art { justify-content: flex-end; }
+.svc[data-flip='true'] .svc__body { text-align: right; }
+.svc[data-flip='true'] .svc__title { justify-content: flex-end; }
+.svc[data-flip='true'] .svc__rule { margin-left: auto; }
+
+/* ---- The numeral ------------------------------------------
+   Outlined, enormous, and behind everything. It is the section's
+   structure: it gives each spread a landmark and a third plane for
+   the parallax to work against.
+   ------------------------------------------------------------ */
+
+/* Sits mostly BEHIND the piece and emerges into the gutter between the
+   two planes. Centred on the seam it ran its strokes straight through
+   the title, which reads as clutter rather than as layering. */
+.svc__num {
+  position: absolute;
+  top: 50%;
+  left: 40%;
+  z-index: 0;
+  font-family: var(--font-display);
+  font-weight: 780;
+  font-size: clamp(180px, 26vw, 400px);
+  line-height: 0.74;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1px #404045;
+  pointer-events: none;
+  user-select: none;
+  /* Centred, then offset by its own scroll plane — the slowest of the
+     three, so it reads as furthest away. */
+  translate: -50% calc(-50% + var(--sy, 0) * -70px);
+}
+
+.svc[data-flip='true'] .svc__num { left: 60%; }
+
+/* ---- The piece --------------------------------------------- */
+
+.svc__art {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  /* Ranged to the outer gutter, so the pieces align down the page. */
+  justify-content: flex-start;
+  /* The middle plane: faster than the numeral, slower than the text. */
+  translate: 0 calc(var(--sy, 0) * -34px);
+  will-change: transform;
+}
+
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Capped by height as well as width: a tall format (the flyer is
+     418x508) otherwise grows past the viewport and each spread becomes
+     taller than a screen. The viewBox ratio keeps the width in step. */
+  max-height: clamp(300px, 54vh, 560px);
+  overflow: visible;
+}
+
+/* Each piece's internal planes lean toward the pointer. --depth is set
+   per layer in ServiceArt; --mx/--my come from the spread. */
+.art [data-layer] {
+  translate:
+    calc(var(--mx, 0) * var(--depth, 0) * 1px)
+    calc(var(--my, 0) * var(--depth, 0) * 0.55px);
+  transition: translate 620ms var(--ease-out);
+}
+
+/* ---- The text ---------------------------------------------- */
+
+.svc__body {
+  position: relative;
+  z-index: 2;
+  translate: 0 calc(var(--sy, 0) * -14px);
+}
+
+.svc__title {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(12px, 1.4vw, 22px);
+  margin: 0;
+  font-weight: 400;
+}
+
+.svc__ord {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.svc__name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(38px, 6.2vw, 104px);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  color: var(--paper);
+  /* Optical: the huge name should sit flush with the numeral's edge. */
+  text-wrap: balance;
+}
+
+.svc__rule {
+  display: block;
+  width: clamp(70px, 9vw, 150px);
+  height: var(--hair);
+  margin-block: clamp(20px, 2.6vh, 34px);
+  height: 2px;
+  background: var(--accent);
+  transform-origin: left center;
+}
+
+.svc[data-flip='true'] .svc__rule { transform-origin: right center; }
+
+.svc__note {
+  margin: 0;
+  max-width: 30ch;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(15px, 1.25vw, 21px);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  color: var(--muted);
+}
+
+.svc[data-flip='true'] .svc__note { margin-left: auto; }
+
+/* ============================================================
+   ENTRANCE
+   Gated on [data-animate], which Services sets only once it knows the
+   reveal can run. Hiding by default and relying on a transition to
+   bring content back leaves the section unreadable if anything stalls.
+   The transitions live on the REVEALED rule, so arming the section
+   never animates content out.
+   ============================================================ */
+
+.services[data-animate='true'] .svc__art {
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+}
+
+.services[data-animate='true'] .svc__name,
+.services[data-animate='true'] .svc__ord,
+.services[data-animate='true'] .svc__note {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.services[data-animate='true'] .svc__rule { transform: scaleX(0); }
+
+.services[data-animate='true'] .svc__num {
+  opacity: 0;
+  scale: 1.06;
+}
+
+.services[data-animate='true'] .svc[data-in='true'] .svc__art {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition:
+    clip-path 1100ms var(--ease-out) 60ms,
+    opacity 700ms var(--ease-out) 60ms;
+}
+
+.services[data-animate='true'] .svc[data-in='true'] .svc__name,
+.services[data-animate='true'] .svc[data-in='true'] .svc__ord,
+.services[data-animate='true'] .svc[data-in='true'] .svc__note {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 760ms var(--ease-out) var(--d, 0ms),
+    transform 900ms var(--ease-out) var(--d, 0ms);
+}
+
+.services[data-animate='true'] .svc[data-in='true'] .svc__ord  { --d: 120ms; }
+.services[data-animate='true'] .svc[data-in='true'] .svc__name { --d: 180ms; }
+.services[data-animate='true'] .svc[data-in='true'] .svc__note { --d: 340ms; }
+
+.services[data-animate='true'] .svc[data-in='true'] .svc__rule {
+  transform: scaleX(1);
+  transition: transform 900ms var(--ease-out) 280ms;
+}
+
+.services[data-animate='true'] .svc[data-in='true'] .svc__num {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity 1200ms var(--ease-out),
+    scale 1400ms var(--ease-out);
+}
+
+/* ============================================================
+   COMPACT — one column, artwork first, text under it.
+   No pointer to lean toward, so the internal parallax is dropped and
+   the numeral moves behind the piece rather than beside it.
+   ============================================================ */
+
+.services[data-compact='true'] .svc {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: clamp(20px, 4vh, 34px);
+  padding-block: clamp(40px, 7vh, 64px);
+}
+
+.services[data-compact='true'] .svc__art,
+.services[data-compact='true'] .svc[data-flip='true'] .svc__art {
+  grid-area: 1 / 1 / 2 / 2;
+}
+
+.services[data-compact='true'] .svc__body,
+.services[data-compact='true'] .svc[data-flip='true'] .svc__body {
+  grid-area: 2 / 1 / 3 / 2;
+  text-align: left;
+}
+
+.services[data-compact='true'] .svc[data-flip='true'] .svc__title { justify-content: flex-start; }
+.services[data-compact='true'] .svc[data-flip='true'] .svc__rule { margin-left: 0; }
+.services[data-compact='true'] .svc[data-flip='true'] .svc__note { margin-left: 0; }
+
+.services[data-compact='true'] .svc__num,
+.services[data-compact='true'] .svc[data-flip='true'] .svc__num {
+  top: 6%;
+  left: 78%;
+  font-size: clamp(150px, 42vw, 240px);
+  translate: -50% calc(var(--sy, 0) * -26px);
+}
+
+.services[data-compact='true'] .art [data-layer] { translate: none; }
+
+.services[data-compact='true'] .art {
+  max-height: clamp(260px, 42vh, 420px);
+  margin-inline: auto;
+}
+
+.services[data-compact='true'] .svc__art { justify-content: center; }
+
+/* ============================================================
+   REDUCED MOTION — final state, no reveal, no parallax.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .services__dot { animation: none; }
+
+  .svc__num,
+  .svc__art,
+  .svc__body,
+  .art [data-layer] {
+    translate: none !important;
+    scale: none !important;
+  }
+
+  .services[data-animate='true'] .svc__art,
+  .services[data-animate='true'] .svc__name,
+  .services[data-animate='true'] .svc__ord,
+  .services[data-animate='true'] .svc__note,
+  .services[data-animate='true'] .svc__num {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+
+  .services[data-animate='true'] .svc__rule { transform: scaleX(1); }
+
+  .art [data-layer],
+  .svc__art,
+  .svc__name,
+  .svc__note,
+  .svc__rule { transition: none !important; }
+}

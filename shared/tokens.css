@@ -1,0 +1,65 @@
+/* ============================================================
+   NEXOO AGENCY — Design tokens
+   Direction: "Exaggerated Minimalism" (ui-ux-pro-max style match)
+   Near-black + warm paper + ONE accent. No second accent, ever.
+   ============================================================ */
+
+:root {
+  /* — Surface ————————————————————————————————— */
+  --ink:        #0A0A0B;   /* near-black, very slightly cool          */
+  --ink-lift:   #0E0E10;   /* hero ground after the loader lifts      */
+  --paper:      #F2F0EC;   /* warm off-white, 17:1 on --ink           */
+  --muted:      #8C8983;   /* 5.4:1 on --ink — safe for small labels  */
+  --faint:      #3A3A3C;   /* hairlines / dividers                    */
+  --accent:     #E8362B;   /* signal red — the dot, and large type or
+                              graphics only (4.6:1 on --ink). Never
+                              small body copy, and never dominant:
+                              it is the single accent of the identity. */
+  --accent-dim: #8E2419;   /* the same red, receded                   */
+
+  /* — Type ——————————————————————————————————— */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-edito:   'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* The wordmark's weight / width / tracking deliberately live in
+     shared/brand.ts, not here: the fitter measures against them, so a
+     second copy in CSS could drift and break the flush setting. */
+
+  /* Meta / label type — mono, uppercase, widely tracked */
+  --meta-size:    11px;
+  --meta-track:   0.18em;
+
+  /* — The dot ————————————————————————————————— */
+  /* Mirrors DOT_* in shared/brand.ts; <Masthead> sets these inline from
+     the constants so the measured slot and the drawn disc always agree. */
+  --dot-slot: 0.9em;
+  --dot-size: 0.36em;
+  --dot-rise: 0.101em;
+
+  /* — Rhythm (density 3/10 → spacious) ——————————— */
+  --pad:  clamp(20px, 3.6vw, 64px);
+  --gap:  clamp(16px, 2.2vw, 34px);
+
+  /* — Motion ———————————————————————————————— */
+  /* One expressive curve, one utility curve. Nothing else. */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);      /* expo.out     */
+  --ease-inout: cubic-bezier(0.76, 0, 0.24, 1);     /* expo.inOut   */
+  --t-fast:   180ms;
+  --t-base:   420ms;
+  --t-slow:   900ms;
+
+  --hair: 1px;
+  color-scheme: dark;
+}
+
+/* Hairlines must stay hairlines on retina. */
+@media (min-resolution: 2dppx) {
+  :root { --hair: 0.5px; }
+}
+
+/* Static film grain — an inline SVG feTurbulence, so it costs one paint
+   and zero network. Public-domain technique, no third-party asset. */
+:root {
+  --grain-src: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='0.55'/></svg>");
+}

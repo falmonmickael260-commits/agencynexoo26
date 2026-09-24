@@ -1,0 +1,395 @@
+/* ============================================================
+   NEXOO AGENCY — Hero shell.
+
+   IMPORTANT: this stylesheet is imported by BOTH
+     · site/components/Hero.tsx      (the live DOM hero)
+     · src/nexoo/NexooLoader.tsx     (the Remotion composition)
+   They render the same markup, so layout parity between the last
+   loader frame and the first hero frame is structural — there is
+   no duplicated positioning math to drift. The loader only layers
+   animated inline styles (opacity / clip-path / font-stretch /
+   translate) on top of these rules.
+   ============================================================ */
+
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  background: var(--ink);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Cursor-reactive hairline field (hero only). */
+.stage__field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Static film grain — one paint, adds "matière" without motion cost. */
+.stage__grain {
+  position: absolute;
+  inset: -100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: soft-light;
+  background-image: var(--grain-src);
+  background-size: 180px 180px;
+}
+
+/* Soft light that trails the pointer, heavily damped. */
+.stage__glow {
+  position: absolute;
+  z-index: 0;
+  width: 46vmax;
+  height: 46vmax;
+  margin: -23vmax 0 0 -23vmax;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(226, 114, 74, 0.10),
+    rgba(226, 114, 74, 0.03) 45%,
+    transparent 72%
+  );
+  will-change: transform;
+}
+
+/* ---- Content frame -------------------------------------- */
+
+.frame {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  padding: var(--pad);
+  box-sizing: border-box;
+}
+
+.frame__top,
+.frame__bottom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex: none;
+}
+
+.frame__bottom {
+  align-items: flex-end;
+  padding-top: clamp(14px, 1.8vh, 26px);
+}
+
+/* The headline block sits low in the frame — editorial masthead. */
+.frame__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: clamp(14px, 2.4vh, 34px);
+  /* The mark is bottom-anchored, but not pinned: the space below lifts
+     it off the rule so the void above reads as composition rather than
+     as the mark having fallen to the floor. */
+  padding-top: clamp(22px, 5vh, 70px);
+  padding-bottom: clamp(38px, 9vh, 118px);
+  min-height: 0;
+}
+
+/* ---- Hairlines ------------------------------------------- */
+
+.rule {
+  flex: none;
+  height: var(--hair);
+  width: 100%;
+  margin: 0;
+  border: 0;
+  background: var(--faint);
+  transform-origin: left center;
+}
+
+.rule--top { margin-top: clamp(12px, 1.6vh, 22px); }
+
+/* ---- Meta type (mono labels) ----------------------------- */
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--meta-size);
+  font-weight: 400;
+  letter-spacing: var(--meta-track);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.meta--group { display: flex; gap: clamp(14px, 2vw, 30px); }
+.meta--accent { color: var(--accent); }
+.meta--bright { color: var(--paper); }
+
+/* ---- Wordmark -------------------------------------------- */
+
+.wordmark {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 0.5vh, 10px);
+  color: var(--paper);
+}
+
+.wordmark__line {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  /* No wrap, no justify tricks: every line is fitted to the exact
+     available width in JS, so the mark is genuinely flush. */
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-style: normal;
+  /* font-size / line-height are set inline by <Masthead>. */
+}
+
+.wordmark__char {
+  display: inline-block;
+  will-change: transform;
+  /* line-height is tighter than the em, so the char box is shorter than
+     the glyph. Pad the box out (and pull it back with a negative margin)
+     so the loader's clip never shaves a cap or a bowl. --char-pad comes
+     from shared/brand.ts, because the loader's geometry uses it too. */
+  padding-block: var(--char-pad);
+  margin-block: calc(-1 * var(--char-pad));
+}
+
+/* ---- The dot ---------------------------------------------- */
+
+/* A layout slot of fixed width. The disc inside is positioned, so it can
+   pulse, drift and deform without ever reflowing the wordmark. */
+.wordmark__dot {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--dot-slot);
+  height: 1em;
+  align-self: center;
+}
+
+.wordmark__disc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  margin: calc(var(--dot-size) / -2) 0 0 calc(var(--dot-size) / -2);
+  border-radius: 50%;
+  background: var(--accent);
+  /* Optically centred on cap height, not on the line box. */
+  translate: 0 calc(var(--dot-rise) * -1);
+  will-change: transform;
+}
+
+/* ---- Claim + CTA ----------------------------------------- */
+
+.claim {
+  margin: 0;
+  max-width: 19ch;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(19px, 1.85vw, 29px);
+  line-height: 1.28;
+  letter-spacing: -0.012em;
+  color: var(--paper);
+}
+
+.claim em {
+  font-family: var(--font-edito);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.16em;
+  letter-spacing: 0;
+  color: var(--accent);
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;          /* ≥44px touch height with the ring */
+  color: var(--paper);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  will-change: transform;
+}
+
+.cta__ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: var(--hair) solid var(--faint);
+  transition: border-color var(--t-base) var(--ease-out);
+  flex: none;
+}
+
+/* Accent disc that scales up from the centre on hover. */
+.cta__ring::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform var(--t-base) var(--ease-out);
+}
+
+.cta__arrow {
+  position: relative;
+  z-index: 1;
+  width: 15px;
+  height: 15px;
+  transition: transform var(--t-base) var(--ease-out),
+              color var(--t-base) var(--ease-out);
+  color: var(--paper);
+}
+
+.cta__label { transition: color var(--t-base) var(--ease-out); }
+
+.cta:hover .cta__ring,
+.cta:focus-visible .cta__ring { border-color: var(--accent); }
+
+.cta:hover .cta__ring::after,
+.cta:focus-visible .cta__ring::after { transform: scale(1); }
+
+.cta:hover .cta__arrow,
+.cta:focus-visible .cta__arrow {
+  transform: translate(3px, -3px);
+  color: var(--ink);
+}
+
+.cta:focus-visible {
+  outline: var(--hair) solid var(--accent);
+  outline-offset: 10px;
+  border-radius: 2px;
+}
+
+/* ---- Scroll cue ------------------------------------------ */
+
+.cue {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cue__track {
+  position: relative;
+  width: 1px;
+  height: 34px;
+  background: var(--faint);
+  overflow: hidden;
+}
+
+.cue__thumb {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 40%;
+  background: var(--paper);
+  animation: cue-drain 2.4s var(--ease-inout) infinite;
+}
+
+@keyframes cue-drain {
+  0%   { transform: translateY(-100%); }
+  60%  { transform: translateY(250%); }
+  100% { transform: translateY(250%); }
+}
+
+/* ============================================================
+   COMPACT — a different composition, not a shrunken desktop.
+   The corner meta rail collapses, the claim grows (there is more
+   vertical room than horizontal), and the CTA becomes a full-width
+   bordered target.
+
+   Driven by [data-compact], NOT a media query. A media query resolves
+   against the viewport width while the layout maths resolves against
+   documentElement.clientWidth, and those differ by the scrollbar — in
+   that band the page rendered half compact and half wide. One owner:
+   HeroFrame sets the attribute from the same width it lays out with,
+   which also keeps the Remotion loader in step at any composition size.
+   ============================================================ */
+
+.frame[data-compact='true'] .frame__body {
+  justify-content: center;
+  gap: clamp(18px, 3.2vh, 30px);
+}
+
+.frame[data-compact='true'] .frame__bottom {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 22px;
+}
+
+/* Second label in each corner rail is noise on a small screen. */
+.frame[data-compact='true'] .frame__top .meta--group .meta:not(:first-child) {
+  display: none;
+}
+
+.frame[data-compact='true'] .claim {
+  max-width: 16ch;
+  font-size: clamp(21px, 6.2vw, 30px);
+}
+
+.frame[data-compact='true'] .cta {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 10px 10px 18px;
+  border: var(--hair) solid var(--faint);
+  border-radius: 999px;
+}
+
+.frame[data-compact='true'] .cue { display: none; }
+
+/* ============================================================
+   REDUCED MOTION — every element renders in its final, readable
+   state. No sweep, no parallax, no drain, no field animation.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .cue__thumb { animation: none; transform: translateY(0); }
+  .stage__glow { display: none; }
+  .cta,
+  .cta__ring,
+  .cta__ring::after,
+  .cta__arrow,
+  .cta__label { transition-duration: 1ms !important; }
+}
+
+
+
+/* The loader's axis: a hairline anchored to the dot's centre that scales
+   out to both gutters. Living inside the dot's slot means it emanates
+   from exactly the right point without any coordinate maths. */
+.wordmark__axis {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200vw;
+  margin-left: -100vw;
+  height: var(--hair);
+  background: var(--faint);
+  translate: 0 calc(var(--dot-rise) * -1);
+  pointer-events: none;
+}

@@ -1,0 +1,120 @@
+/* ============================================================
+   NEXOO AGENCY — site-only layer.
+   shared/hero.css holds the layout the loader and the hero have in
+   common; everything here is behaviour that exists only in the live
+   page: reset, entrance choreography, pointer response, scroll.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--ink);
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Reserve the scrollbar from the first paint: the gutters are computed
+     from clientWidth, and a scrollbar appearing later would shift the
+     whole masthead. Also keeps CLS at zero. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--accent); color: var(--ink); }
+
+:focus-visible { outline: var(--hair) solid var(--accent); outline-offset: 4px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ---- Hand-off ------------------------------------------------
+   The hero is mounted and laid out underneath the loader from the
+   first paint. Nothing in the masthead or the hairlines animates
+   here — they are already in their final state, which is precisely
+   what the loader's last frame shows. Only the elements the loader
+   never drew are introduced, and they continue the loader's motion
+   rather than restart it.
+   -------------------------------------------------------------- */
+
+.enter {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity var(--t-slow) var(--ease-out) var(--d, 0ms),
+    transform var(--t-slow) var(--ease-out) var(--d, 0ms);
+}
+
+[data-entered='true'] .enter {
+  opacity: 1;
+  transform: none;
+}
+
+/* The lattice arrives slowest of all — it should feel like the ground
+   settling, not an element appearing. */
+.stage__field {
+  transition: opacity 1400ms var(--ease-out) 120ms;
+}
+
+/* ---- Pointer response ----------------------------------------
+   --pnx / --pny are the damped, normalised pointer (-1…1), written
+   once per frame by site/lib/motion.ts. Each glyph carries its own
+   signed depth, so the masthead widens and narrows a couple of
+   pixels with the cursor — the same gesture as the loader's wdth
+   axis, continued by other means.
+   -------------------------------------------------------------- */
+
+.wordmark__char {
+  translate:
+    calc(var(--pnx, 0) * var(--dx, 0) * 1px)
+    calc(var(--pny, 0) * var(--dy, 0) * 1px);
+}
+
+/* The dot is never completely still — see the breath in Hero.tsx. Under
+   reduced motion it simply stops, rather than being hidden. */
+.wordmark__disc { will-change: transform; }
+
+/* ---- Scroll ---------------------------------------------------
+   --sc is hero scroll progress, 0…1 over one viewport height.
+   The masthead lags the page and the lattice lags further still.
+   -------------------------------------------------------------- */
+
+.frame__body  { translate: 0 calc(var(--sc, 0) * 64px); }
+.stage__field { translate: 0 calc(var(--sc, 0) * 130px); }
+.frame__top   { opacity: calc(1 - var(--sc, 0) * 1.6); }
+.frame__bottom{ opacity: calc(1 - var(--sc, 0) * 2.2); }
+
+/* ---- Reduced motion ------------------------------------------
+   No entrance, no parallax, no pointer response. Final state only.
+   -------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .enter {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .stage__field { transition: none; }
+
+  .wordmark__char,
+  .frame__body,
+  .stage__field { translate: none; }
+
+  .wordmark__disc { transform: none !important; }
+
+  .frame__top,
+  .frame__bottom { opacity: 1; }
+}
