@@ -31,9 +31,49 @@
     <style>
       html, body { margin: 0; background: #0a0a0b; }
       #root { min-height: 100svh; }
+
+      /* Pre-intro. Painted from the HTML, so it is on screen in the first
+         frame — before React, before the Player's bundle, before the
+         typefaces. Without it the viewer gets ~1.5s of pure black while
+         the JS boots, and the intro that follows reads as "nothing
+         happened, then the site appeared".
+
+         Deliberately a hairline and NOT a dot: the loader opens on the
+         red dot at the masthead's position, and a second dot centred
+         somewhere else would have to cross-fade across the screen. A
+         rule is already part of the vocabulary and collides with
+         nothing. */
+      #preintro {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 200;
+        height: 1px;
+        background: #26262a;
+        transition: opacity 260ms linear;
+      }
+      #preintro i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: #e8362b;
+        transform-origin: left center;
+        animation: preintro 1.6s cubic-bezier(0.65, 0, 0.32, 1) infinite;
+      }
+      #preintro[data-done='true'] { opacity: 0; }
+
+      @keyframes preintro {
+        0%   { transform: scaleX(0); }
+        60%  { transform: scaleX(1); }
+        100% { transform: scaleX(1); opacity: 0; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #preintro i { animation: none; transform: scaleX(1); opacity: 0.5; }
+      }
     </style>
   </head>
   <body>
+    <div id="preintro" aria-hidden="true"><i></i></div>
     <div id="root"></div>
     <noscript>
       <div style="padding: 32px; color: #f2f0ec; font-family: system-ui, sans-serif">

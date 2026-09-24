@@ -39,6 +39,15 @@ export const App: React.FC = () => {
      to size the composition — and before the browser paints, so the
      'boot' phase is never actually seen. */
   useLayoutEffect(() => {
+    /* Hand over from the HTML pre-intro. It is faded rather than yanked,
+       and removed only once the fade has run, so there is no seam
+       between the static first paint and the composition. */
+    const pre = document.getElementById('preintro');
+    if (pre) {
+      pre.dataset.done = 'true';
+      window.setTimeout(() => pre.remove(), 320);
+    }
+
     // Reduced motion skips the intro entirely and lands on the hero —
     // the loader is expressive, not informational.
     if (reduced) {
